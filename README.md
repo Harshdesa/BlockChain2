@@ -3,8 +3,8 @@ Steps to Perform:
 
 Private Blockchain
 
-#For personalized accounts:
-#This includes the password you will use to unlock your account.
+#For personalized accounts:<br />
+#This includes the password you will use to unlock your account.<br />
 1. password.txt
 
 #This script will create accounts for the blockchain which you will pre fund in the genesis.json
