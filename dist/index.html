@@ -10,14 +10,20 @@
       Simple Login Page
     </h1>
     <script src="./bundle.js"></script>
-    <div class="main__account-buttons" id="accountButtons">
+    <div class="page_1" id="accountButtons">
       <form name="login">Username<input type="text" id="account_login_form"/>Password<input type="password" id="login_password_form""/>
         <input type="button" value="Login" id="login_form"/>
       </form>
       <form name="signup">Password<input type="password" id="new_account_password_form"/>
         <button id="signup_form">Signup</button>
-        <input type="reset" value="Cancel"/>
       </form>
     </div>
+
+    <div class="page_2 hidden" id="accountDetails">
+      <span id="balance">BALANCE: </span>
+      <span id="currentAccount">CURRENT ACCOUNT: </span>
+      <span id="listAccounts">PARTICIPATING ACCOUNTS: </span>
+    </div>
+
   </body>
 </html>

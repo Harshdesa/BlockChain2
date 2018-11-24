@@ -15,6 +15,10 @@ var loginAccount;
 var loginPassword;
 var loginButton;
 var accountButtonsContainer;
+var balance;
+var accountDetails;
+var currentAccount;
+var listAccounts;
 
 async function createAccount() {
     try {
@@ -30,7 +34,12 @@ async function createAccount() {
 async function login(){
   try {
     await unlockAccount(loginAccount.value, loginPassword.value); 
+    balance.textContent = balance.textContent + (await web3.eth.getBalance(loginAccount.value));
+    currentAccount.textContent = currentAccount.textContent + loginAccount.value;
+    listAccounts.textContent = listAccounts.textContent + (await web3.eth.getAccounts(console.log));
     accountButtonsContainer.classList.add("hidden");
+    accountDetails.classList.remove("hidden");
+    
   } catch (e) {
     alert("Something went Wrong! Check logs");
     console.log(e);
@@ -51,7 +60,10 @@ function onLoad() {
   loginPassword = document.getElementById("login_password_form");
   loginButton = document.getElementById("login_form");
   accountButtonsContainer = document.getElementById("accountButtons"); 
-
+  accountDetails = document.getElementById("accountDetails");
+  balance = document.getElementById("balance");
+  currentAccount = document.getElementById("currentAccount");
+  listAccounts = document.getElementById("listAccounts");  
 
   //BUTTON EVENT HANDLERS
   loginButton.onclick = login;
