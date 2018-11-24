@@ -2,16 +2,19 @@
 Steps to Perform: 
 
 Private Blockchain
-For personalized accounts:
-1. password.txt -> This includes the password you will use to unlock your account. 
 
-2. # first we create some accounts 
- geth --datadir=./datadir --password ./password.txt account new > account1.txt 
- geth --datadir=./datadir --password ./password.txt account new > account2.txt
+#For personalized accounts:
+#This includes the password you will use to unlock your account.
+1. password.txt
 
-3. genesis.json -> This will init the blockchain. Update this to use the addresses from one of the new accounts 
+#This script will create accounts for the blockchain which you will pre fund in the genesis.json
+2. sh preFundAccount.sh 
 
-4. geth --datadir ./datadir init genisis.json
+#Update this everytime to pre fund accounts. Account addresses will change everytime.
+3. genesis.json
+
+#Initialize Blockchain
+4. geth --datadir ./privateDataDir init genesis.json
 
 All we do is 
 
