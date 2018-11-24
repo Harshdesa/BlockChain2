@@ -12,3 +12,9 @@ For personalized accounts:
 3. genesis.json -> This will init the blockchain. Update this to use the addresses from one of the new accounts 
 
 4. geth --datadir ./datadir init genisis.json
+
+All we do is 
+
+yarn install
+yarn run start
+Now, you can edit the html and javascript dynamically
