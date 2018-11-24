@@ -1,7 +1,7 @@
-pragma solidity ^0.4.22;
+pragma solidity ^0.5.0;
 
 contract Auction {
-    address public auctioneer;
+    address payable public auctioneer;
     uint public auctionEnd;
 
     address public highestBidder;
@@ -15,8 +15,8 @@ contract Auction {
     event HighestBidIncreased(address bidder, uint amount);
     event AuctionEnded(address winner, uint amount);
 
-    constructor(uint _timeLimit, address _auctioneer) public {
-        auctioneer = _auctioneer;
+    constructor(uint _timeLimit) public {
+        auctioneer = msg.sender;
         auctionEnd = now + _timeLimit;
     }
 
@@ -52,7 +52,7 @@ contract Auction {
         return true;
     }
 
-    function auctionEnd() public {
+    function auctionEnds() public {
         require(now >= auctionEnd, "Auction not yet ended.");
         require(!ended, "auctionEnd has already been called.");
 
