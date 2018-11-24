@@ -13,8 +13,8 @@ sh preFundAccount.sh<br />
 #Update this everytime to pre fund accounts. Account addresses will change everytime.<br />
 genesis.json<br />
 
-#Initialize Blockchain
-4. geth --datadir ./privateDataDir init genesis.json
+#Initialize Blockchain<br />
+geth --datadir ./privateDataDir init genesis.json<br />
 
 All we do is 
 
