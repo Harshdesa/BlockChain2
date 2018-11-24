@@ -5,13 +5,13 @@ Private Blockchain
 
 #For personalized accounts:<br />
 #This includes the password you will use to unlock your account.<br />
-1. password.txt
+password.txt<br />
 
-#This script will create accounts for the blockchain which you will pre fund in the genesis.json
-2. sh preFundAccount.sh 
+#This script will create accounts for the blockchain which you will pre fund in the genesis.json<br />
+sh preFundAccount.sh<br />
 
-#Update this everytime to pre fund accounts. Account addresses will change everytime.
-3. genesis.json
+#Update this everytime to pre fund accounts. Account addresses will change everytime.<br />
+genesis.json<br />
 
 #Initialize Blockchain
 4. geth --datadir ./privateDataDir init genesis.json
