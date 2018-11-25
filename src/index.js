@@ -9,14 +9,11 @@ import Web3 from "web3";
 const web3 = new Web3("ws://localhost:8547");
 
 import {abi} from './Auctionabi';
-console.log(abi);
 
 import {bytecode} from './Auctionbytecode';
-console.log(bytecode);
 
 var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
 //var instance_main = abiWeb3.at("0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
-console.log(myContract);
 //console.log(myContract.methods.highestBid());
 myContract.methods.highestBid().call().then(console.log);
 myContract.methods.highestBidder().call().then(console.log);
@@ -43,6 +40,20 @@ var participant;
 var bid_form;
 var bid_amount;
 var withdraw_form;
+
+myContract.events.HighestBidIncreased({ 
+}, function(error, event){ console.log(event); }).on('data', function(event){ 
+    console.log(event.returnValues[0]); // same results as the optional callback above 
+    try {
+      bidEvents.textContent = "EVENTS: Highest Bid raised to " + event.returnValues[1];
+    } catch (e) {
+        console.log(e);
+      }
+    console.log(event.returnValues[1]); 
+}).on('changed', function(event){ 
+    //console.log(event.returnValues); // remove event from local database 
+}).on('error', console.error);
+
 
 async function createAccount() {
     try {
@@ -77,8 +88,8 @@ async function login(){
     }
 
   } catch (e) {
-    alert("Something went Wrong! Check logs");
-    console.log(e);
+      alert("Something went Wrong! Check logs");
+      console.log(e);
     }
 }
 
@@ -88,7 +99,18 @@ async function unlockAccount(account, password) {
 }
 
 async function bid() {
-
+  try {
+    console.log(bid_amount.value);
+    console.log(loginAccount.value);
+    myContract.methods.bid().send({from:loginAccount.value, value: bid_amount.value, gas: 100000}, function(error, transactionHash){
+      console.log(transactionHash);
+      console.log(error);
+    });
+  } catch (e) {
+      alert("Something went Wrong! Check logs");
+      console.log(e);
+    }
+  
 }
 
 async function withdraw() {
