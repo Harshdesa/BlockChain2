@@ -7,7 +7,7 @@
   </head>
   <body>
     <h1> 
-      Simple Login Page
+      Private Auction 
     </h1>
     <script src="./bundle.js"></script>
     <div class="page_1" id="accountButtons">
@@ -20,9 +20,24 @@
     </div>
 
     <div class="page_2 hidden" id="accountDetails">
-      <span id="balance">BALANCE: </span>
-      <span id="currentAccount">CURRENT ACCOUNT: </span>
-      <span id="listAccounts">PARTICIPATING ACCOUNTS: </span>
+      <span id="balance">BALANCE: </span><br>
+      <span id="currentAccount">CURRENT ACCOUNT: </span><br>
+      <span id="listAccounts">PARTICIPATING ACCOUNTS: </span><br>
+      <span id="bidEvents">EVENTS: </span><br>
+      <span id="auctionStatus">AUCTION STATUS: </span><br>
+      <div class="page_2a" id="participant">
+        <form name="bid">Bid Here<input type="text" id="bid_amount"/>
+          <button id="bid_form">Bid</button>
+        </form>
+        <form>
+          <button id="withdraw_form">Withdraw</button>
+        </form>
+      </div>
+      <div class="page_2b" id="auctioneer">
+        <form>
+          <button id="auctionEnd_form">End Auction</button>
+        </form>
+      </div>
     </div>
 
   </body>

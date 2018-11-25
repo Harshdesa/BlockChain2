@@ -8,6 +8,19 @@
 import Web3 from "web3";
 const web3 = new Web3("ws://localhost:8547");
 
+import {abi} from './Auctionabi';
+console.log(abi);
+
+import {bytecode} from './Auctionbytecode';
+console.log(bytecode);
+
+var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
+//var instance_main = abiWeb3.at("0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
+console.log(myContract);
+//console.log(myContract.methods.highestBid());
+myContract.methods.highestBid().call().then(console.log);
+myContract.methods.highestBidder().call().then(console.log);
+
 //JAVASCRIPT VARIABLES
 var signup;
 var newAccountPassword;
@@ -19,6 +32,17 @@ var balance;
 var accountDetails;
 var currentAccount;
 var listAccounts;
+
+var bidEvents;
+var auctionStatus;
+
+var auctioneer;
+var auctionEnd_form;
+
+var participant;
+var bid_form;
+var bid_amount;
+var withdraw_form;
 
 async function createAccount() {
     try {
@@ -36,10 +60,22 @@ async function login(){
     await unlockAccount(loginAccount.value, loginPassword.value); 
     balance.textContent = balance.textContent + (await web3.eth.getBalance(loginAccount.value));
     currentAccount.textContent = currentAccount.textContent + loginAccount.value;
-    listAccounts.textContent = listAccounts.textContent + (await web3.eth.getAccounts(console.log));
+    var allAccounts = await web3.eth.getAccounts(console.log);
+    var i=0;
+    while(allAccounts.length>i)
+    {
+      listAccounts.textContent = listAccounts.textContent + '\n' + allAccounts[i] + '\n';
+      i++;
+    }
+
     accountButtonsContainer.classList.add("hidden");
     accountDetails.classList.remove("hidden");
-    
+    if((loginAccount.value).toUpperCase() == (allAccounts[0]).toUpperCase()) {
+      participant.classList.add("hidden");
+    } else {
+      auctioneer.classList.add("hidden");
+    }
+
   } catch (e) {
     alert("Something went Wrong! Check logs");
     console.log(e);
@@ -49,6 +85,18 @@ async function login(){
 
 async function unlockAccount(account, password) {
     await web3.eth.personal.unlockAccount(account, password);
+}
+
+async function bid() {
+
+}
+
+async function withdraw() {
+
+}
+
+async function auctionEnd() {
+
 }
 
 function onLoad() {
@@ -63,11 +111,26 @@ function onLoad() {
   accountDetails = document.getElementById("accountDetails");
   balance = document.getElementById("balance");
   currentAccount = document.getElementById("currentAccount");
-  listAccounts = document.getElementById("listAccounts");  
+  listAccounts = document.getElementById("listAccounts");
+  
+  bidEvents = document.getElementById("bidEvents");
+  auctionStatus = document.getElementById("auctionStatus");
+
+  auctioneer = document.getElementById("auctioneer");
+  auctionEnd_form = document.getElementById("auctionEnd_form");
+
+  participant = document.getElementById("participant");
+  bid_form = document.getElementById("bid_form");
+  bid_amount = document.getElementById("bid_amount");
+  withdraw_form = document.getElementById("withdraw_form");
+  
 
   //BUTTON EVENT HANDLERS
   loginButton.onclick = login;
   signup.onclick = createAccount;
+  bid_form.onclick = bid;
+  withdraw_form.onclick = withdraw;
+  auctionEnd_form.onclick = auctionEnd;
 }
 
 document.body.onload = onLoad;
