@@ -49,3 +49,8 @@ All we do is
 yarn install
 yarn run start
 Now, you can edit the html and javascript dynamically
+
+For demo/testing purposes: 
+Use Remix to interact with the public blockchain!
+Use geth console to interact with the private blockchain!
+Use chrome/nodejs to interact with the hybrid blockchain!
