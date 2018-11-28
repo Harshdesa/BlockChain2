@@ -1,22 +1,35 @@
-//Web3 = require('web3');
-//web3 = new Web3.providers.HttpProvider("http://localhost:8546");
-//var web3 = new Web3(Web3.givenProvider || 'ws://localhost:8547');
-//let web3 = new Web3();
-//web3.setProvider(new Web3.providers.HttpProvider("http://localhost:8546"));
-//web3.setProvider(new Web3.providers.WebsocketProvider('ws://localhost:8547'));
-
 import Web3 from "web3";
 const web3 = new Web3("ws://localhost:8547");
+
+const web4 = new Web3(Web3.givenProvider);
+
+console.log(web4);
+console.log('web4: ');
+web4.eth.getAccounts(console.log);
+web4.eth.getBlockNumber(console.log);
+console.log(web4.eth.accounts[0]);
+web4.eth.getBalance("0x736B1Cd349D45F7f4daA785aA879eE77d7F97572").then(console.log);
+
+//var web4 = new Web3(new Web3.providers.HttpProvider(
+//    'https://ropsten.infura.io/v3/712ea259789e40bfb36ab7398fcd4430'
+//));
 
 import {abi} from './Auctionabi';
 
 import {bytecode} from './Auctionbytecode';
 
+import {abiPublic} from './AuctionPublicabi';
+
+import {bytecodePublic} from './AuctionPublicbytecode';
+
 var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
-//var instance_main = abiWeb3.at("0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
-//console.log(myContract.methods.highestBid());
+
+var myPublicContract = new web4.eth.Contract(abiPublic, "0x013451bf30c7c0611febd97397c2f72bf29b8624");
+
 myContract.methods.highestBid().call().then(console.log);
 myContract.methods.highestBidder().call().then(console.log);
+
+myPublicContract.methods.getHighestBid().call().then(console.log);
 
 //JAVASCRIPT VARIABLES
 var signup;
@@ -46,6 +59,10 @@ myContract.events.HighestBidIncreased({
     console.log(event.returnValues[0]); // same results as the optional callback above 
     try {
       bidEvents.textContent = "EVENTS: Highest Bid raised to " + event.returnValues[1];
+      myPublicContract.methods.setHighestBid(event.returnValues[1]).send({from:"0x736B1Cd349D45F7f4daA785aA879eE77d7F97572", gas: 100000}, function(error, transactionHash){
+        console.log(transactionHash);
+        console.log(error);
+      });
     } catch (e) {
         console.log(e);
       }
