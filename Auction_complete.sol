@@ -43,10 +43,8 @@ contract Auction {
 
     //TESTED
     function bidCommitment(bytes32 _bid) public {
-        //require(
-        //    now <= bidEnd,
-        //    "Auction already ended."
-        //);
+        //require(now <= bidEnd, "Auction already ended.");
+        //require(msg.sender != auctioneer, "The auctioneer cannot bid");
         bids[msg.sender].push(_bid);
         addBidder(msg.sender);
     }
@@ -72,6 +70,7 @@ contract Auction {
         lengthOfBids = bids[msg.sender].length;
         //require(_values.length == lengthOfBids, "values length is not matching");
         //require(_randoms.length == lengthOfBids, "randoms length is not matching");
+        //require(msg.sender != auctioneer, "The auctioneer cannot reveal");
         
         //for(uint i = 0; i < lengthOfBids; i++) {
         //  values[msg.sender][i] = _values[i];
