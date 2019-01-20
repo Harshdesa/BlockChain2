@@ -8,9 +8,16 @@ contract AuctionPublic {
    address public highestBidder;
    address public secondHighestBidder;
  
+   address public congressFactoryAddress = 0x0fC6793DC255866DD52501Bbd348F713b81C47dc;
+   address public breachContract;
+   
    address public auctioneer;
 
+    
+
+
    modifier onlyBy(address _auctioneer){ require(msg.sender == _auctioneer); _; }
+   
 
    constructor() public {
      auctioneer = msg.sender;
@@ -33,4 +40,28 @@ contract AuctionPublic {
    function getHighestBidder() view public returns (address, address) {
        return (highestBidder, secondHighestBidder);
    }
+   
+   
+   
+   function breachSuspected(address[] memory _accused) public {
+       CongressFactory congressObject = CongressFactory(congressFactoryAddress);
+       //breachContract = congressObject.createCongress(_accused, highestBid);
+       breachContract = congressObject.createCongress(_accused, 1);
+       Congress bc = Congress(breachContract);
+       
+   }
+   
+  
+}
+
+interface Congress {
+    function newProposal(address beneficiary, uint etherAmount, bytes32 jobDescription, bytes32 transactionBytecode) external returns (uint proposalID);
+    function vote(uint proposalNumber, bool supportsProposal, bytes32 justificationText) external returns (uint voteID);
+    function executeProposal(uint proposalNumber, bytes32 transactionBytecode) external returns (bool success);
+    function getProposalDecision(uint proposalNumber) external returns (uint decision_code);
+}
+
+interface CongressFactory {
+    //function createCongress(address [] calldata , uint doh) external returns (address _congressAddress);
+    function createCongress(address [] calldata, uint doh) external returns (address _breachContract);
 }
