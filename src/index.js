@@ -3,6 +3,10 @@ const web3 = new Web3("ws://localhost:8547");
 
 const web4 = new Web3(Web3.givenProvider);
 
+var sha256 = require('js-sha256');
+
+console.log("15" + sha256('15'));
+
 console.log(web4);
 console.log('web4: ');
 web4.eth.getAccounts(console.log);
@@ -21,6 +25,8 @@ import {bytecode} from './Auctionbytecode';
 import {abiPublic} from './AuctionPublicabi';
 
 import {bytecodePublic} from './AuctionPublicbytecode';
+
+import {accountMap} from './accountMappings';
 
 var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
 
@@ -42,7 +48,7 @@ var balance;
 var accountDetails;
 var currentAccount;
 var listAccounts;
-
+var publicAccount;
 var bidEvents;
 var auctionStatus;
 
@@ -88,6 +94,9 @@ async function login(){
     await unlockAccount(loginAccount.value, loginPassword.value); 
     balance.textContent = balance.textContent + (await web3.eth.getBalance(loginAccount.value));
     currentAccount.textContent = currentAccount.textContent + loginAccount.value;
+    publicAccount.textContent = publicAccount.textContent + accountMap[loginAccount.value];
+    console.log(accountMap);
+    console.log(accountMap[loginAccount.value]);
     var allAccounts = await web3.eth.getAccounts(console.log);
     var i=0;
     while(allAccounts.length>i)
@@ -119,9 +128,17 @@ async function bid() {
   try {
     console.log(bid_amount.value);
     console.log(loginAccount.value);
-    myContract.methods.bid().send({from:loginAccount.value, value: bid_amount.value, gas: 100000}, function(error, transactionHash){
-      console.log(transactionHash);
-      console.log(error);
+    //await myContract.methods.bid().send({from:loginAccount.value, value: bid_amount.value, gas: 100000}, function(error, transactionHash){
+    //  console.log(transactionHash);
+    //  console.log(error);
+    //});
+    myContract.methods.bid().send({from:loginAccount.value, value: bid_amount.value, gas: 100000})
+    .once('transactionHash', function(hash){ console.log(hash); })
+    .once('receipt', function(receipt){ console.log(receipt); })
+    .on('confirmation', function(confNumber, receipt){ console.log(receipt); })
+    .on('error', function(error){ console.log(error); })
+    .then(function(receipt){
+      console.log(receipt);
     });
   } catch (e) {
       alert("Something went Wrong! Check logs");
@@ -148,8 +165,9 @@ function onLoad() {
   loginButton = document.getElementById("login_form");
   accountButtonsContainer = document.getElementById("accountButtons"); 
   accountDetails = document.getElementById("accountDetails");
-  balance = document.getElementById("balance");
-  currentAccount = document.getElementById("currentAccount");
+  balance = document.getElementById("privateBalance");
+  currentAccount = document.getElementById("privateAccount");
+  publicAccount = document.getElementById("publicAccount");
   listAccounts = document.getElementById("listAccounts");
   
   bidEvents = document.getElementById("bidEvents");

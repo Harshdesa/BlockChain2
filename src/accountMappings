@@ -1,0 +1,4 @@
+export var accountMap = {
+  "0x4a7a035176ccbac85f270e457df359540534b93f": "PUBADDR",
+  "balh": "balh"
+}
