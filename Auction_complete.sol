@@ -22,7 +22,8 @@ contract Auction {
 
     bool public ended = false;
     bool public reachedPlaceBid = false;
-
+    bool public bidStarted = false;
+    bool public revealStarted = false;
 
     // Events
     event HighestBidIncreased(address bidder, uint amount);
@@ -30,8 +31,8 @@ contract Auction {
     event Penalize(address malice, uint amount);
 
     //Modifiers
-    modifier onlyBefore(uint _time) { require(now < _time); _; }
-    modifier onlyAfter(uint _time) { require(now > _time); _; }
+    modifier onlyBefore(uint _time) { /*require(now < _time);*/ _; }
+    modifier onlyAfter(uint _time) { /*require(now > _time);*/ _; }
 
     //TESTED
     constructor(uint _bidTimeLimit, uint _revealTimeLimit) public {
@@ -40,11 +41,23 @@ contract Auction {
         revealEnd = bidEnd + _revealTimeLimit;
     }
 
+    function startBid() public {
+        require(msg.sender == auctioneer, "You are not the auctioneer");
+        //TO BE REPLACED BY AN EVENT
+        ended = false;
+        bidStarted = true;
+    }
+
+    function startReveal() public {
+        require(msg.sender == auctioneer, "You are not the auctioneer");
+        //TO BE REPLACED BY EVENTS
+        bidStarted = false;
+        revealStarted = true;
+    }
 
     //TESTED
     function bidCommitment(bytes32 _bid) public {
-        //require(now <= bidEnd, "Auction already ended.");
-        //require(msg.sender != auctioneer, "The auctioneer cannot bid");
+        require(bidStarted == true,"Auction already ended.");
         bids[msg.sender].push(_bid);
         addBidder(msg.sender);
     }
@@ -64,13 +77,17 @@ contract Auction {
           
       }
     
+    function showValues(uint value) pure public returns (bytes32){
+        return keccak256(abi.encodePacked(value));
+    }
+    
     
     //TESTED
     function revealCommitment(uint[] memory _values, uint[] memory _randoms) public {
+        require(revealStarted == true,"Auction already ended.");
         lengthOfBids = bids[msg.sender].length;
         //require(_values.length == lengthOfBids, "values length is not matching");
         //require(_randoms.length == lengthOfBids, "randoms length is not matching");
-        //require(msg.sender != auctioneer, "The auctioneer cannot reveal");
         
         //for(uint i = 0; i < lengthOfBids; i++) {
         //  values[msg.sender][i] = _values[i];
@@ -81,7 +98,7 @@ contract Auction {
         total_amount_false = 0;
 
         for(uint i = 0; i < _values.length; i++) {
-          if(bids[msg.sender][i] == sha256(abi.encodePacked(_values[i]))) {
+          if(bids[msg.sender][i] == keccak256(abi.encodePacked(_values[i]))) {
               amount_true = _values[i];
           }
           else {
@@ -112,8 +129,10 @@ contract Auction {
         require(msg.sender == auctioneer, "You are not the auctioneer");
         require(!ended, "auctionEnd has already been called.");
         ended = true;
+        bidStarted = false;
+        revealStarted = false;
         
         emit AuctionEnded(highestBidder, highestBid);
-        auctioneer.transfer(highestBid);
+        //auctioneer.transfer(highestBid);
     }
 }

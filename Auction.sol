@@ -2,63 +2,118 @@ pragma solidity ^0.5.0;
 
 contract Auction {
     address payable public auctioneer;
-    uint public auctionEnd;
+    uint public bidEnd;
+    uint public revealEnd;
+
+    uint256 public total_amount_false = 0;
+    uint256 public amount_true = 0;
+    uint256 public lengthOfBids = 0;
 
     address public highestBidder;
+    address public secondHighestBidder;
+
     uint public highestBid;
+    uint public secondHighestBid;
 
-    mapping(address => uint) pendingReturns;
+    mapping(address => bytes32[]) public bids;
+    mapping(address => uint[]) public values;
+    mapping(address => uint[]) public randoms;
+    address[] public bidders;
 
-    bool ended;
+    bool public ended = false;
+    bool public reachedPlaceBid = false;
 
-    // Events 
+
+    // Events
     event HighestBidIncreased(address bidder, uint amount);
     event AuctionEnded(address winner, uint amount);
+    event Penalize(address malice, uint amount);
 
-    constructor(uint _timeLimit) public {
+    //Modifiers
+    modifier onlyBefore(uint _time) { require(now < _time); _; }
+    modifier onlyAfter(uint _time) { require(now > _time); _; }
+
+    //TESTED
+    constructor(uint _bidTimeLimit, uint _revealTimeLimit) public {
         auctioneer = msg.sender;
-        auctionEnd = now + _timeLimit;
+        bidEnd = now + _bidTimeLimit;
+        revealEnd = bidEnd + _revealTimeLimit;
     }
 
-    function bid() public payable {
-        require(
-            now <= auctionEnd,
-            "Auction already ended."
-        );
 
-        require(
-            msg.value > highestBid,
-            "There already is a higher bid."
-        );
+    //TESTED
+    function bidCommitment(bytes32 _bid) public {
+        //require(now <= bidEnd, "Auction already ended.");
+        //require(msg.sender != auctioneer, "The auctioneer cannot bid");
+        bids[msg.sender].push(_bid);
+        addBidder(msg.sender);
+    }
+    
+    
+    //TESTED
+    function addBidder(address _bidder) internal {
+      bool exist = false;
+      for(uint i =0; i < bidders.length; i++) {
+          if(bidders[i] == _bidder) {
+            exist = true;
+          }
+       }
+       if(exist == false) {
+        bidders.push(_bidder);
+      }
+          
+      }
+    
+    
+    //TESTED
+    function revealCommitment(uint[] memory _values, uint[] memory _randoms) public {
+        lengthOfBids = bids[msg.sender].length;
+        //require(_values.length == lengthOfBids, "values length is not matching");
+        //require(_randoms.length == lengthOfBids, "randoms length is not matching");
+        //require(msg.sender != auctioneer, "The auctioneer cannot reveal");
+        
+        //for(uint i = 0; i < lengthOfBids; i++) {
+        //  values[msg.sender][i] = _values[i];
+        //  randoms[msg.sender][i] = _randoms[i];
+        //}
+        
+        amount_true = 0;
+        total_amount_false = 0;
 
-        if (highestBid != 0) {
-            pendingReturns[highestBidder] += highestBid;
+        for(uint i = 0; i < _values.length; i++) {
+          if(bids[msg.sender][i] == sha256(abi.encodePacked(_values[i]))) {
+              amount_true = _values[i];
+          }
+          else {
+              total_amount_false = total_amount_false + _values[i];
+              emit Penalize(msg.sender, total_amount_false);
+          }
         }
-        highestBidder = msg.sender;
-        highestBid = msg.value;
-        emit HighestBidIncreased(msg.sender, msg.value);
+        reachedPlaceBid = placeBid(msg.sender, amount_true);
     }
 
-    function withdraw() public returns (bool) {
-        uint amount = pendingReturns[msg.sender];
-        if (amount > 0) {
-            pendingReturns[msg.sender] = 0;
-
-            if (!msg.sender.send(amount)) {
-                pendingReturns[msg.sender] = amount;
-                return false;
-            }
+    function placeBid(address _bidder, uint _value) internal
+            returns (bool success)
+    {
+        if (_value <= highestBid) {
+            return false;
         }
+        secondHighestBid = highestBid;
+        highestBid = _value;
+        
+        secondHighestBidder = highestBidder;
+        highestBidder = _bidder;
+        
         return true;
     }
 
-    function auctionEnds() public {
-        require(now >= auctionEnd, "Auction not yet ended.");
+
+    function auctionEnds() public onlyAfter(revealEnd){
+        require(msg.sender == auctioneer, "You are not the auctioneer");
         require(!ended, "auctionEnd has already been called.");
-
         ended = true;
+        
         emit AuctionEnded(highestBidder, highestBid);
-
         auctioneer.transfer(highestBid);
     }
 }
