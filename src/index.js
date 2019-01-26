@@ -28,7 +28,9 @@ import {bytecodePublic} from './AuctionPublicbytecode';
 
 import {accountMap} from './accountMappings';
 
-var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
+//var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
+
+var myContract = new web3.eth.Contract(abi, "0x2a43c6ab2cbafb9390e7edc47492bbfa00834dde");
 
 var myPublicContract = new web4.eth.Contract(abiPublic, "0x013451bf30c7c0611febd97397c2f72bf29b8624");
 
@@ -44,9 +46,10 @@ var loginAccount;
 var loginPassword;
 var loginButton;
 var accountButtonsContainer;
-var balance;
-var accountDetails;
-var currentAccount;
+var privateBalance;
+var publicBalance;
+var dashboards;
+var privateAccount;
 var listAccounts;
 var publicAccount;
 var bidEvents;
@@ -56,9 +59,14 @@ var auctioneer;
 var auctionEnd_form;
 
 var participant;
-var bid_form;
-var bid_amount;
-var withdraw_form;
+var bidButton;
+var revealButton;
+var bidAmount;
+var revealAmount;
+//var withdraw_form;
+
+var startBid;
+var startReveal;
 
 myContract.events.HighestBidIncreased({ 
 }, function(error, event){ console.log(event); }).on('data', function(event){ 
@@ -92,9 +100,12 @@ async function createAccount() {
 async function login(){
   try {
     await unlockAccount(loginAccount.value, loginPassword.value); 
-    balance.textContent = balance.textContent + (await web3.eth.getBalance(loginAccount.value));
-    currentAccount.textContent = currentAccount.textContent + loginAccount.value;
-    publicAccount.textContent = publicAccount.textContent + accountMap[loginAccount.value];
+
+    privateAccount.textContent += loginAccount.value;
+    privateBalance.textContent += (await web3.eth.getBalance(loginAccount.value));
+    publicAccount.textContent += accountMap[loginAccount.value];
+    publicBalance.textContent += (await web4.eth.getBalance(accountMap[loginAccount.value]));
+
     console.log(accountMap);
     console.log(accountMap[loginAccount.value]);
     var allAccounts = await web3.eth.getAccounts(console.log);
@@ -106,7 +117,7 @@ async function login(){
     }
 
     accountButtonsContainer.classList.add("hidden");
-    accountDetails.classList.remove("hidden");
+    dashboards.classList.remove("hidden");
     if((loginAccount.value).toUpperCase() == (allAccounts[0]).toUpperCase()) {
       participant.classList.add("hidden");
     } else {
@@ -126,20 +137,20 @@ async function unlockAccount(account, password) {
 
 async function bid() {
   try {
-    console.log(bid_amount.value);
+    console.log(bidAmount.value);
     console.log(loginAccount.value);
-    //await myContract.methods.bid().send({from:loginAccount.value, value: bid_amount.value, gas: 100000}, function(error, transactionHash){
+    //await myContract.methods.bid().send({from:loginAccount.value, value: bidAmount.value, gas: 100000}, function(error, transactionHash){
     //  console.log(transactionHash);
     //  console.log(error);
     //});
-    myContract.methods.bid().send({from:loginAccount.value, value: bid_amount.value, gas: 100000})
-    .once('transactionHash', function(hash){ console.log(hash); })
-    .once('receipt', function(receipt){ console.log(receipt); })
-    .on('confirmation', function(confNumber, receipt){ console.log(receipt); })
-    .on('error', function(error){ console.log(error); })
-    .then(function(receipt){
-      console.log(receipt);
-    });
+    //myContract.methods.bid().send({from:loginAccount.value, value: bidAmount.value, gas: 100000})
+    //.once('transactionHash', function(hash){ console.log(hash); })
+    //.once('receipt', function(receipt){ console.log(receipt); })
+    //.on('confirmation', function(confNumber, receipt){ console.log(receipt); })
+    //.on('error', function(error){ console.log(error); })
+    //.then(function(receipt){
+    //  console.log(receipt);
+    //});
   } catch (e) {
       alert("Something went Wrong! Check logs");
       console.log(e);
@@ -147,11 +158,65 @@ async function bid() {
   
 }
 
+async function reveal() {
+  try {
+    console.log(revealAmount.value);
+    console.log();
+  } catch (e) {
+      alert("Something went Wrong! Check logs");
+      console.log(e);
+  }
+
+}
+
+async function auctioneerStartBid() {
+
+console.log("Auctioneer starts  Bid");
+
+myContract.methods.startBid().send({from:loginAccount.value,  gas: 100000})
+    .once('transactionHash', function(hash){ console.log(hash); })
+    .once('receipt', function(receipt){ console.log(receipt); })
+    .on('confirmation', function(confNumber, receipt){ console.log(receipt); })
+    .on('error', function(error){ console.log(error); })
+    .then(function(receipt){
+      console.log(receipt);
+    });// Call to the startBid() privateAuction contract goes here
+
+}
+
+async function auctioneerStartReveal() {
+
+console.log("Auctioneer starts Reveal");
+
+myContract.methods.startReveal().send({from:loginAccount.value,  gas: 100000})
+    .once('transactionHash', function(hash){ console.log(hash); })
+    .once('receipt', function(receipt){ console.log(receipt); })
+    .on('confirmation', function(confNumber, receipt){ console.log(receipt); })
+    .on('error', function(error){ console.log(error); })
+    .then(function(receipt){
+      console.log(receipt);
+    });
+
+// Call to the startReveal() privateAuction contract function goes here
+
+}
+
 async function withdraw() {
 
 }
 
 async function auctionEnd() {
+
+console.log("Auctioneer ends Auction");
+
+myContract.methods.auctionEnds().send({from:loginAccount.value,  gas: 100000})
+    .once('transactionHash', function(hash){ console.log(hash); })
+    .once('receipt', function(receipt){ console.log(receipt); })
+    .on('confirmation', function(confNumber, receipt){ console.log(receipt); })
+    .on('error', function(error){ console.log(error); })
+    .then(function(receipt){
+      console.log(receipt);
+    });
 
 }
 
@@ -164,10 +229,11 @@ function onLoad() {
   loginPassword = document.getElementById("login_password_form");
   loginButton = document.getElementById("login_form");
   accountButtonsContainer = document.getElementById("accountButtons"); 
-  accountDetails = document.getElementById("accountDetails");
-  balance = document.getElementById("privateBalance");
-  currentAccount = document.getElementById("privateAccount");
+  dashboards = document.getElementById("dashboards");
+  privateBalance = document.getElementById("privateBalance");
+  privateAccount = document.getElementById("privateAccount");
   publicAccount = document.getElementById("publicAccount");
+  publicBalance = document.getElementById("publicBalance");
   listAccounts = document.getElementById("listAccounts");
   
   bidEvents = document.getElementById("bidEvents");
@@ -177,16 +243,23 @@ function onLoad() {
   auctionEnd_form = document.getElementById("auctionEnd_form");
 
   participant = document.getElementById("participant");
-  bid_form = document.getElementById("bid_form");
-  bid_amount = document.getElementById("bid_amount");
-  withdraw_form = document.getElementById("withdraw_form");
+  bidButton = document.getElementById("bidButton");
+  revealButton = document.getElementById("revealButton");
+  bidAmount = document.getElementById("bidAmount");
+  revealAmount = document.getElementById("revealAmount");
+//  withdraw_form = document.getElementById("withdraw_form");
   
+  startBid = document.getElementById("startBid");
+  startReveal = document.getElementById("startReveal");
 
   //BUTTON EVENT HANDLERS
   loginButton.onclick = login;
   signup.onclick = createAccount;
-  bid_form.onclick = bid;
-  withdraw_form.onclick = withdraw;
+  bidButton.onclick = bid;
+  revealButton.onclick = reveal;
+  startBid.onclick = auctioneerStartBid;
+  startReveal.onclick = auctioneerStartReveal;
+//  withdraw_form.onclick = withdraw;
   auctionEnd_form.onclick = auctionEnd;
 }
 

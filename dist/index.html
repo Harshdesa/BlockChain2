@@ -10,7 +10,7 @@
       Secure Hybrid Auction 
     </h1>
     <script src="./bundle.js"></script>
-    <div class="page_1" id="accountButtons">
+    <div class="pageA" id="accountButtons">
       <form name="login">Username<input type="text" id="account_login_form"/>Password<input type="password" id="login_password_form""/>
         <input type="button" value="Login" id="login_form"/>
       </form>
@@ -19,7 +19,7 @@
       </form>
     </div>
 
-    <div class="page_2 hidden" id="accountDetails">
+    <div class="pageB hidden" id="dashboards">
       <h2>
         <pre>  Personal Dashboard</pre>
       </h2>
@@ -29,7 +29,6 @@
 
       <span id="privateAccount">Account: </span><br>
       <span id="privateBalance">Balance: </span><br>
-      <span id="listAccounts">PARTICIPATING ACCOUNTS: </span><br>
 
       <h3>
         <pre>    Public Account Details</pre>
@@ -43,29 +42,61 @@
         <pre>    Actions</pre>
      </h3>
 
-      <span id="bidEvents">EVENTS: </span><br>
-      <span id="auctionStatus">AUCTION STATUS: </span><br>
       <div class="page_2a" id="participant">
-        <form name="bid">Bid Here<input type="text" id="bid_amount"/>
-          <button id="bid_form">Bid</button>
+        <p>Enter commitments only</p>
+        <form name="bid">Bid Here: <input type="text" id="bidAmount"/>
+          <button id="bidButton">Bid</button>
         </form>
-        <form>
-          <button id="withdraw_form">Withdraw</button>
+        <p>Enter revelations only</p>
+        <form name="reveal">Reveal Here (v,r): <input type="text" id="revealAmount"/>
+          <button id="revealButton">Reveal</button>
         </form>
       </div>
       <div class="page_2b" id="auctioneer">
         <form>
+          <button id="startBid">Start Bid Phase </button><br>
+          <button id="startReveal">Start Reveal Phase </button><br>
+          <p>Participants, Commitments, Revelations</p>
+          <span id="auctionData">Auction Data : </span><br>
           <button id="auctionEnd_form">End Auction</button>
         </form>
       </div>
+        <p>Detect Breach</p>
+        <form name="breach">Accuse here: <input type="text" id="accuseList"/>
+          <button id="breachButton">Detect Breach</button>
+        </form>
+         <p>Vote on Proposal/Vote on Breach</p>
+         <form name="vote">Vote here: <input type="text" id="voteDecision"/>
+          <button id="voteButton">Vote</button>
+        </form> 
+
       <h2>
         <pre>  Public Dashboard</pre>
       </h2>
 
+      <span id="auctionStatus">AUCTION STATUS: </span><br>
+      <span id="bidEvents">EVENTS: </span><br>
+      <span id="highestBidA">Highest Bid: </span><br>
+      <span id="highestBidB">2nd Highest Bid: </span><br>
+      <span id="highestBidderA">Highest Bidder: </span><br>
+      <span id="highestBidderB">2nd Highest Bidder: </span><br>
 
       <h2>
         <pre>  Adjudication Dashboard</pre>
       </h2>
+
+        <span id="adjudicationEvents">EVENTS: </span><br>
+        <span id="accused">Accused: </span><br>
+        <span id="accuser">Accuser: </span><br>
+        <span id="auctioneerCheck">Auctioneer Check: </span><br>
+        <span id="voteResult">Vote Result: </span><br>
+        
+        <p>Here down is OBE</p>
+        <form>
+          <button id="withdraw_form">Withdraw</button>
+        </form>
+      <span id="listAccounts">PARTICIPATING ACCOUNTS: </span><br>
+
     </div>
 
   </body>
