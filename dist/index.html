@@ -45,20 +45,21 @@
       <div class="page_2a" id="participant">
         <p>Enter commitments only</p>
         <form name="bid">Bid Here: <input type="text" id="bidAmount"/>
-          <button id="bidButton">Bid</button>
+          <button type="button" id="bidButton">Bid</button>
         </form>
         <p>Enter revelations only</p>
         <form name="reveal">Reveal Here (v,r): <input type="text" id="revealAmount"/>
-          <button id="revealButton">Reveal</button>
+          <input type="text" id="revealRandom"/>
+          <button type="button" id="revealButton">Reveal</button>
         </form>
       </div>
       <div class="page_2b" id="auctioneer">
         <form>
-          <button id="startBid">Start Bid Phase </button><br>
-          <button id="startReveal">Start Reveal Phase </button><br>
+          <button type="button" id="startBid">Start Bid Phase </button><br>
+          <button type="button" id="startReveal">Start Reveal Phase </button><br>
           <p>Participants, Commitments, Revelations</p>
           <span id="auctionData">Auction Data : </span><br>
-          <button id="auctionEnd_form">End Auction</button>
+          <button type="button" id="auctionEnd_form">End Auction</button>
         </form>
       </div>
         <p>Detect Breach</p>

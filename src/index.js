@@ -30,12 +30,21 @@ import {accountMap} from './accountMappings';
 
 //var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
 
-var myContract = new web3.eth.Contract(abi, "0x2a43c6ab2cbafb9390e7edc47492bbfa00834dde");
+var myContract = new web3.eth.Contract(abi, "0xff6f5a92034563cc3556a40e771cb36e0b6806cd");
 
 var myPublicContract = new web4.eth.Contract(abiPublic, "0x013451bf30c7c0611febd97397c2f72bf29b8624");
 
 myContract.methods.highestBid().call().then(console.log);
 myContract.methods.highestBidder().call().then(console.log);
+myContract.methods.bidEnd().call().then(console.log);
+myContract.methods.showValues(2).call({from: '0x21f84d5aa39bd6c73356f96cae6559b133cfaafe'}, (error, result) => {
+      console.log(result);
+});
+myContract.methods.bidders(2).call({from: '0x21f84d5aa39bd6c73356f96cae6559b133cfaafe'}, (error, result) => {
+  if(result == null) {
+    console.log(result + " Result is null");
+  }
+});
 
 myPublicContract.methods.getHighestBid().call().then(console.log);
 
@@ -55,6 +64,8 @@ var publicAccount;
 var bidEvents;
 var auctionStatus;
 
+var auctionData;
+
 var auctioneer;
 var auctionEnd_form;
 
@@ -63,6 +74,7 @@ var bidButton;
 var revealButton;
 var bidAmount;
 var revealAmount;
+var revealRandom;
 //var withdraw_form;
 
 var startBid;
@@ -120,6 +132,7 @@ async function login(){
     dashboards.classList.remove("hidden");
     if((loginAccount.value).toUpperCase() == (allAccounts[0]).toUpperCase()) {
       participant.classList.add("hidden");
+      populateAuctioneerData();
     } else {
       auctioneer.classList.add("hidden");
     }
@@ -131,6 +144,26 @@ async function login(){
 }
 
 
+async function populateAuctioneerData() {
+
+  console.log("Populating auctioneer data");
+  var result = 1;
+  var i = 0;
+  while(result == 1) {
+    try {
+    await myContract.methods.bidders(i).call({from: '0x21f84d5aa39bd6c73356f96cae6559b133cfaafe', gas: 2000001}, (error, res) => {
+      if(res == null) {
+        console.log(res + " Result is null");
+        result = 0;
+      }
+      else { console.log(res); auctionData.textContent += res; i++;}
+    });
+    }
+    catch(e) {alert("Something went wrong!");console.log(e);}
+  }
+
+}
+
 async function unlockAccount(account, password) {
     await web3.eth.personal.unlockAccount(account, password);
 }
@@ -139,18 +172,11 @@ async function bid() {
   try {
     console.log(bidAmount.value);
     console.log(loginAccount.value);
-    //await myContract.methods.bid().send({from:loginAccount.value, value: bidAmount.value, gas: 100000}, function(error, transactionHash){
-    //  console.log(transactionHash);
-    //  console.log(error);
-    //});
-    //myContract.methods.bid().send({from:loginAccount.value, value: bidAmount.value, gas: 100000})
-    //.once('transactionHash', function(hash){ console.log(hash); })
-    //.once('receipt', function(receipt){ console.log(receipt); })
-    //.on('confirmation', function(confNumber, receipt){ console.log(receipt); })
-    //.on('error', function(error){ console.log(error); })
-    //.then(function(receipt){
-    //  console.log(receipt);
-    //});
+    console.log("Bidder " + loginAccount.value + " is bidding");
+    await myContract.methods.bidCommitment(bidAmount.value).send({from:loginAccount.value,  gas: 200001})
+    .then((receipt) => {
+      console.log(receipt);
+  });
   } catch (e) {
       alert("Something went Wrong! Check logs");
       console.log(e);
@@ -160,8 +186,13 @@ async function bid() {
 
 async function reveal() {
   try {
-    console.log(revealAmount.value);
-    console.log();
+    var values = revealAmount.value.split(",");
+    var randoms = revealRandom.value.split(",");
+    console.log("Bidder " + loginAccount.value + " is revealing");
+    await myContract.methods.revealCommitment(values, randoms).send({from:loginAccount.value,  gas: 200001})
+    .then((receipt) => {
+     console.log(receipt);
+    });
   } catch (e) {
       alert("Something went Wrong! Check logs");
       console.log(e);
@@ -171,34 +202,20 @@ async function reveal() {
 
 async function auctioneerStartBid() {
 
-console.log("Auctioneer starts  Bid");
-
-myContract.methods.startBid().send({from:loginAccount.value,  gas: 100000})
-    .once('transactionHash', function(hash){ console.log(hash); })
-    .once('receipt', function(receipt){ console.log(receipt); })
-    .on('confirmation', function(confNumber, receipt){ console.log(receipt); })
-    .on('error', function(error){ console.log(error); })
-    .then(function(receipt){
-      console.log(receipt);
-    });// Call to the startBid() privateAuction contract goes here
-
+  console.log("Auctioneer starts  Bid");
+  await myContract.methods.startBid().send({from:loginAccount.value,  gas: 100000})
+  .then((receipt) => {
+      console.log(receipt); 
+  });
 }
 
 async function auctioneerStartReveal() {
 
-console.log("Auctioneer starts Reveal");
-
-myContract.methods.startReveal().send({from:loginAccount.value,  gas: 100000})
-    .once('transactionHash', function(hash){ console.log(hash); })
-    .once('receipt', function(receipt){ console.log(receipt); })
-    .on('confirmation', function(confNumber, receipt){ console.log(receipt); })
-    .on('error', function(error){ console.log(error); })
-    .then(function(receipt){
-      console.log(receipt);
-    });
-
-// Call to the startReveal() privateAuction contract function goes here
-
+  console.log("Auctioneer starts Reveal");
+  await myContract.methods.startReveal().send({from:loginAccount.value,  gas: 100000})
+  .then((receipt) => {
+      console.log(receipt); 
+  });
 }
 
 async function withdraw() {
@@ -207,17 +224,11 @@ async function withdraw() {
 
 async function auctionEnd() {
 
-console.log("Auctioneer ends Auction");
-
-myContract.methods.auctionEnds().send({from:loginAccount.value,  gas: 100000})
-    .once('transactionHash', function(hash){ console.log(hash); })
-    .once('receipt', function(receipt){ console.log(receipt); })
-    .on('confirmation', function(confNumber, receipt){ console.log(receipt); })
-    .on('error', function(error){ console.log(error); })
-    .then(function(receipt){
+  console.log("Auctioneer ends Auction");
+  await myContract.methods.auctionEnds().send({from:loginAccount.value,  gas: 100000})
+  .then((receipt) => {
       console.log(receipt);
-    });
-
+  });
 }
 
 function onLoad() {
@@ -235,6 +246,8 @@ function onLoad() {
   publicAccount = document.getElementById("publicAccount");
   publicBalance = document.getElementById("publicBalance");
   listAccounts = document.getElementById("listAccounts");
+ 
+  auctionData = document.getElementById("auctionData");
   
   bidEvents = document.getElementById("bidEvents");
   auctionStatus = document.getElementById("auctionStatus");
@@ -247,6 +260,7 @@ function onLoad() {
   revealButton = document.getElementById("revealButton");
   bidAmount = document.getElementById("bidAmount");
   revealAmount = document.getElementById("revealAmount");
+  revealRandom = document.getElementById("revealRandom");
 //  withdraw_form = document.getElementById("withdraw_form");
   
   startBid = document.getElementById("startBid");
