@@ -65,5 +65,6 @@ STEPS TO KICK-START (DO IN FOLLOWING ORDER)<br/>
 2. Set miners as above <br />
 3. Deploy private contract as above <br />
 4. Update the application to point to new contract <br />
-5. Run the yarn command as above <br />
+5. Open remix and load the contract<br />
+6. Run the yarn command as above <br />
 
