@@ -30,9 +30,15 @@ import {accountMap} from './accountMappings';
 
 //var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
 
-var myContract = new web3.eth.Contract(abi, "0xff6f5a92034563cc3556a40e771cb36e0b6806cd");
+var myContract = new web3.eth.Contract(abi, "0x4297e7207061ccff4cbe5cb0f7dba4fdcdd2f385");
 
-var myPublicContract = new web4.eth.Contract(abiPublic, "0x013451bf30c7c0611febd97397c2f72bf29b8624");
+var myPublicContract = new web4.eth.Contract(abiPublic, "0xd382140c79391bd3aac452081e3989a4a349ad92");
+
+myPublicContract.methods.highestBid().call().then(console.log);
+myPublicContract.methods.highestBidder().call().then(console.log);
+myPublicContract.methods.secondHighestBid().call().then(console.log);
+myPublicContract.methods.secondHighestBidder().call().then(console.log);
+
 
 myContract.methods.highestBid().call().then(console.log);
 myContract.methods.highestBidder().call().then(console.log);
@@ -98,6 +104,29 @@ myContract.events.HighestBidIncreased({
 }).on('error', console.error);
 
 
+
+myContract.events.AuctionEnded({
+}, function(error, event){ console.log(event); }).on('data', function(event){
+    console.log(event.returnValues[1]); // same results as the optional callback above
+    try {
+      bidEvents.textContent = "EVENTS: Auction has ended and the winner is  " + event.returnValues[0];
+      myPublicContract.methods.setHighestBid(event.returnValues[1], 5).send({from:"0x736B1Cd349D45F7f4daA785aA879eE77d7F97572", gas: 100000}, function(error, transactionHash){
+        console.log(transactionHash);
+        console.log(error);
+      });
+  
+      myPublicContract.methods.setHighestBidder(event.returnValues[0], '0x21f84d5aa39bd6c73356f96cae6559b133cfaafe').send({from:"0x736B1Cd349D45F7f4daA785aA879eE77d7F97572", gas: 100000}, function(error, transactionHash){
+        console.log(transactionHash);
+        console.log(error);
+      });
+    } catch (e) {
+        console.log(e);
+      }
+    console.log(event.returnValues[1]);
+}).on('changed', function(event){
+    //console.log(event.returnValues); // remove event from local database
+}).on('error', console.error);
+
 async function createAccount() {
     try {
         var password = newAccountPassword.value; 
@@ -118,8 +147,19 @@ async function login(){
     publicAccount.textContent += accountMap[loginAccount.value];
     publicBalance.textContent += (await web4.eth.getBalance(accountMap[loginAccount.value]));
 
-    console.log(accountMap);
-    console.log(accountMap[loginAccount.value]);
+    await myPublicContract.methods.highestBid().call({from: accountMap[loginAccount.value], gas: 2000001}, (error, res) => {
+      highestBidA.textContent += res;
+    });
+    await myPublicContract.methods.secondHighestBid().call({from: accountMap[loginAccount.value], gas: 2000001}, (error, res) => {
+      highestBidB.textContent += res;
+    });
+    await myPublicContract.methods.highestBidder().call({from: accountMap[loginAccount.value], gas: 2000001}, (error, res) => {
+      highestBidderA.textContent += res;
+    });
+    await myPublicContract.methods.secondHighestBidder().call({from: accountMap[loginAccount.value], gas: 2000001}, (error, res) => {
+      highestBidderB.textContent += res;
+    });
+
     var allAccounts = await web3.eth.getAccounts(console.log);
     var i=0;
     while(allAccounts.length>i)
