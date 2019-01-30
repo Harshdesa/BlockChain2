@@ -20,7 +20,7 @@ geth --datadir ./privateDataDir init genesis.json<br />
 geth --datadir ./privateDataDir --networkid 1114 --rpc --rpcaddr "localhost" --rpccorsdomain "*" --rpcport 8546 --rpcapi admin,db,eth,debug,net,txpool,personal,web3 --ws --wsorigins "http://localhost:8080" --wsport 8547 --wsapi="eth,web3,personal,miner" console 2>> privateEth.log<br />
 
 #Set the miner. Without a miner, transactions can't be committed. Thus events won't be fired. Thus, nothing will commit to the public blockchain<br />
-miner.setEtherbase(web3.eth.accounts[0])
+miner.setEtherbase(web3.eth.accounts[0]) <br />
 miner.start()
 
 #Open a node console and call the blockchain from there<br />
