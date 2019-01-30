@@ -36,6 +36,7 @@ tail -f privateEth.log<br />
 var abi = eth.contract([{"constant"...Auctionabi...])<br />
 var bytecode = '0x60806040523...Auctionbytecode...'<br />
 var deploy = {from:web3.eth.accounts[0], data:bytecode, gas: 2000000}<br />
+personal.unlockAccount(web3.eth.accounts[0]) <br />
 var instance = abi.new(10000, deploy)<br />
 instance.address<br />
 #geth console command for existing BC<br />
