@@ -8,12 +8,12 @@ contract AuctionPublic {
    address public highestBidder;
    address public secondHighestBidder;
  
-   address public congressFactoryAddress = 0x98e00d286c4f3a2cd02E44214A219FB08ABf94Ae;
+   address public congressFactoryAddress = 0xc1faEC6156Fae376da5892B79CafF4f89d27e1f7;
    address public breachContract;
    
    address public auctioneer;
-
-    
+   bool public breachCommitted = false;
+   bool public breach = true;
 
 
    modifier onlyBy(address _auctioneer){ require(msg.sender == _auctioneer); _; }
@@ -72,13 +72,14 @@ contract AuctionPublic {
    //TESTED
    function breachDecision(address _breachContract, uint _proposalNumber) public returns (bool) {
        Congress bc = Congress(_breachContract);
-       return bc.getProposalDecision(_proposalNumber);
+       breachCommitted = bc.getProposalDecision(_proposalNumber);
+       return breachCommitted;
    }
    
    //TESTED
    function auctioneerBreachDecision(address[] memory _accused) public returns (bool) {
        CongressFactory congressObject = CongressFactory(congressFactoryAddress);
-       bool breach = true;
+       breach = true;
        for(uint i = 0; i< _accused.length; i++) {
           breach = congressObject.checkCommitments(_accused[i]);
         }
