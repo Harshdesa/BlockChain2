@@ -45,7 +45,7 @@ import {accountMap} from './accountMappings';
 
 //var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
 
-var myContract = new web3.eth.Contract(abi, "0xff6f5a92034563cc3556a40e771cb36e0b6806cd");
+var myContract = new web3.eth.Contract(abi, "0xa01001b15751458e7351bdcac29a14ae0b433dfe");
 
 //var myPublicContract = new web4.eth.Contract(abiPublic, "0xd9a4cca4042e3d15f8bf91bcc27e08f2af66794f");
 
@@ -122,7 +122,6 @@ var revealButton;
 var bidAmount;
 var revealAmount;
 var revealRandom;
-//var withdraw_form;
 
 var startBid;
 var startReveal;
@@ -161,12 +160,12 @@ myContract.events.AuctionEnded({
     console.log(event.returnValues[1]); // same results as the optional callback above
     try {
       bidEvents.textContent = "EVENTS: Auction has ended and the winner is  " + event.returnValues[0];
-      myPublicContract.methods.setHighestBid(event.returnValues[1], 5).send({from:"0x736B1Cd349D45F7f4daA785aA879eE77d7F97572", gas: 100000}, function(error, transactionHash){
+      myPublicContract.methods.setHighestBid(event.returnValues[1], event.returnValues[3]).send({from: accountMap[loginAccount.value] , gas: 100000}, function(error, transactionHash){
         console.log(transactionHash);
         console.log(error);
       });
   
-      myPublicContract.methods.setHighestBidder(event.returnValues[0], '0x099bc2afce893cb4e61f9ecca476730ced4c40ea').send({from:"0x736B1Cd349D45F7f4daA785aA879eE77d7F97572", gas: 100000}, function(error, transactionHash){
+      myPublicContract.methods.setHighestBidder(event.returnValues[0], event.returnValues[2]).send({from: accountMap[loginAccount.value] , gas: 100000}, function(error, transactionHash){
         console.log(transactionHash);
         console.log(error);
       });
@@ -211,6 +210,14 @@ async function login(){
      highestBidderB.textContent += res;
     });
 
+    var adjudication;
+    
+    await myContract.methods.ended().call({from: loginAccount.value }, (error, result) => {
+      adjudication = result;
+      console.log(result);
+    });
+
+  if(adjudication) {
 //ADJUDICATION DASHBOARD
   //For loop required here
   accused =  document.getElementById("accused");
@@ -256,7 +263,7 @@ async function login(){
   await myPublicContract.methods.breachCommitted().call({from: accountMap[loginAccount.value]}, (error, res) => {
       voteResult.textContent += res
     });
-
+  }
 
     var allAccounts = await web3.eth.getAccounts(console.log);
     var i=0;
@@ -366,9 +373,6 @@ async function auctioneerStartReveal() {
   });
 }
 
-async function withdraw() {
-
-}
 
 async function auctionEnd() {
 
@@ -385,16 +389,16 @@ async function breachSuspected() {
   console.log(accuseList.value);
 
   //STEP 2
-  await myPublicContract.methods.breachSuspected(["0x4a5AD455963CE8935bc5a168EB2DD71c22058363"]).send({from: '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085'}, function(error, transactionHash){
+  await myPublicContract.methods.breachSuspected(["0x4a5AD455963CE8935bc5a168EB2DD71c22058363"]).send({from: accountMap[loginAccount.value]}, function(error, transactionHash){
         console.log(transactionHash);
         console.log(error);
       });
-    await myPublicContract.methods.breachContract().call({from: '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085', gas: 2000001}, (error, res) => {
+    await myPublicContract.methods.breachContract().call({from: accountMap[loginAccount.value], gas: 2000001}, (error, res) => {
       congressAddress = res;
       console.log(congressAddress);
     });
   //STEP 3
-    await myPublicContract.methods.createProposal(congressAddress, '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085', 5).send({from: '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085'}, function(error, transactionHash){
+    await myPublicContract.methods.createProposal(congressAddress, '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085', 5).send({from: accountMap[loginAccount.value]}, function(error, transactionHash){
         console.log(transactionHash);
         console.log(error);
       });
@@ -419,18 +423,18 @@ async function voteHere() {
 
   console.log(voteDecision.value);
 
-  await myPublicContract.methods.breachContract().call({from: '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085', gas: 2000001}, (error, res) => {
+  await myPublicContract.methods.breachContract().call({from: accountMap[loginAccount.value], gas: 2000001}, (error, res) => {
   congressAddress = res;
   console.log(congressAddress);
   });
   //STEP 6
-  await myPublicContract.methods.voteHere(congressAddress, 0, voteDecision.value).send({from: '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085', gas: 1400000}, function(error, transactionHash){
+  await myPublicContract.methods.voteHere(congressAddress, 0, voteDecision.value).send({from: accountMap[loginAccount.value], gas: 1400000}, function(error, transactionHash){
   console.log(transactionHash);
   console.log(error);
   });
 
   //STEP 7
-  await myPublicContract.methods.executeProposalHere(congressAddress, 0).send({from: '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085', gas: 1400000}, function(error, transactionHash){
+  await myPublicContract.methods.executeProposalHere(congressAddress, 0).send({from: accountMap[loginAccount.value], gas: 1400000}, function(error, transactionHash){
     console.log(transactionHash);
     console.log(error);
   });
@@ -468,7 +472,6 @@ async function onLoad() {
   bidAmount = document.getElementById("bidAmount");
   revealAmount = document.getElementById("revealAmount");
   revealRandom = document.getElementById("revealRandom");
-//  withdraw_form = document.getElementById("withdraw_form");
   
   startBid = document.getElementById("startBid");
   startReveal = document.getElementById("startReveal");
