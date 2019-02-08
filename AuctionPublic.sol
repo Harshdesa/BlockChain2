@@ -8,7 +8,7 @@ contract AuctionPublic {
    address public highestBidder;
    address public secondHighestBidder;
  
-   address public congressFactoryAddress = 0xc1faEC6156Fae376da5892B79CafF4f89d27e1f7;
+   address public congressFactoryAddress = 0xa1AD255f723CdACdB60EEadeC227f088485cAf3d;
    address public breachContract;
    
    address public auctioneer;
@@ -41,6 +41,16 @@ contract AuctionPublic {
        return (highestBidder, secondHighestBidder);
    }
    
+   function reset(address _congressFactoryAddress) public {
+       highestBid = 0;
+       secondHighestBid = 0;
+       delete highestBidder;
+       delete secondHighestBidder;
+       delete breachContract;
+       breachCommitted = false;
+       breach = true;
+       congressFactoryAddress = _congressFactoryAddress;
+   }
    
    //TESTED
    function breachSuspected(address[] memory _accused) public returns (address){
