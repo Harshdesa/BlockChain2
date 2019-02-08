@@ -60,6 +60,21 @@ contract CongressFactory {
         
         return congressContract;
     }
+    
+    function reset() public {
+        delete accused;
+        delete accuser;
+        delete congressContracts;
+        breachSuspected = false;
+        breach = true;
+        delete commitmentsFromAuctioneer;
+        for(uint i =0; i < bidders.length; i++) {
+          address _bidder = bidders[i];
+          commitments[_bidder].length = 0;
+       }
+        delete bidders;
+    }
+    
 }
 
 
