@@ -113,7 +113,13 @@ contract Auction {
             returns (bool success)
     {
         if (_value <= highestBid) {
-            return false;
+            if(_value >= secondHighestBid) {
+                secondHighestBid = _value;
+                secondHighestBidder = _bidder;
+                return true;
+            } else {
+                return false;
+            }
         }
         secondHighestBid = highestBid;
         highestBid = _value;
@@ -134,5 +140,21 @@ contract Auction {
         
         emit AuctionEnded(highestBidder, highestBid, secondHighestBidder, secondHighestBid);
         //auctioneer.transfer(highestBid);
+    }
+    
+    function reset() public {
+        highestBid = 0;
+        secondHighestBid= 0;
+        ended = false;
+        bidStarted = false;
+        revealStarted = false;
+        total_amount_false = 0;
+        amount_true = 0;
+        for(uint i =0; i < bidders.length; i++) {
+          address _bidder = bidders[i];
+          bids[_bidder].length = 0;
+       }
+        delete bidders;
+        
     }
 }
