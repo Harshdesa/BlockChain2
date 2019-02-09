@@ -43,15 +43,12 @@ import {bytecodeCongress} from './Congressbytecode';
 import {accountMap} from './accountMappings';
 
 
-//var myContract = new web3.eth.Contract(abi, "0x2e7d013d076d6bfb9ca330da5d25d13a5604dc49");
 
-var myContract = new web3.eth.Contract(abi, "0xa01001b15751458e7351bdcac29a14ae0b433dfe");
+var myContract = new web3.eth.Contract(abi, "0xa1e1bb0458fa960c3694c7dbd92e8ba64dc800fc");
 
-//var myPublicContract = new web4.eth.Contract(abiPublic, "0xd9a4cca4042e3d15f8bf91bcc27e08f2af66794f");
+var myPublicContract = new web4.eth.Contract(abiPublic, "0x8c257b187d218f2c33e42ee99cf52e9672415741");
 
-var myPublicContract = new web4.eth.Contract(abiPublic, "0x1ed7165fe861dd6b133d98b884e5c0415fd5033a");
-
-var myCongressFactoryContract = new web4.eth.Contract(abiCongressFactory, "0xc1faEC6156Fae376da5892B79CafF4f89d27e1f7");
+var myCongressFactoryContract = new web4.eth.Contract(abiCongressFactory, "0xa1AD255f723CdACdB60EEadeC227f088485cAf3d");
 
 var congressAddress;
 
@@ -210,12 +207,12 @@ async function login(){
      highestBidderB.textContent += res;
     });
 
-    var adjudication;
+    var adjudication=false;
     
-    await myContract.methods.ended().call({from: loginAccount.value }, (error, result) => {
-      adjudication = result;
-      console.log(result);
-    });
+    //await myContract.methods.ended().call({from: loginAccount.value }, (error, result) => {
+    //  adjudication = result;
+    //  console.log(result);
+    //});
 
   if(adjudication) {
 //ADJUDICATION DASHBOARD
@@ -277,7 +274,7 @@ async function login(){
     dashboards.classList.remove("hidden");
     if((loginAccount.value).toUpperCase() == (allAccounts[0]).toUpperCase()) {
       participant.classList.add("hidden");
-      //populateAuctioneerData();
+      populateAuctioneerData();
     } else {
       auctioneer.classList.add("hidden");
     }
@@ -292,21 +289,60 @@ async function login(){
 async function populateAuctioneerData() {
 
   console.log("Populating auctioneer data");
-  var result = 1;
-  var i = 0;
-  while(result == 1) {
-    try {
-    await myContract.methods.bidders(i).call({from: '0x21f84d5aa39bd6c73356f96cae6559b133cfaafe', gas: 2000001}, (error, res) => {
-      if(res == null) {
-        console.log(res + " Result is null");
-        result = 0;
-      }
-      else { console.log(res); auctionData.textContent += res; i++;}
+  var ended = false;
+  await myContract.methods.ended().call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+    ended = res;
+  });
+  var table = document.getElementById("myTable");
+  var rowSize = 1;
+  var row = table.insertRow(rowSize);
+  var cell1 = row.insertCell(0);
+  var bidderLength=0;
+  await myContract.methods.getNumberOfBidders().send({from:loginAccount.value,  gas: 200001})
+    .then((receipt) => {
+     console.log(receipt);
     });
+  await myContract.methods.bidderLength().call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+    bidderLength = res;
+  });
+  var i=0; 
+  while(i<bidderLength) {
+    var address;
+    await myContract.methods.bidders(i).call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+      address = res;
+      cell1.innerHTML = address;
+    });
+    await myContract.methods.storeBidsPerParticipant(address).send({from: loginAccount.value, gas: 2000001})
+      .then((receipt) => {
+     console.log(receipt);
+    });     
+    var bidsPerParticipantLength =0;
+    await myContract.methods.bidsPerParticipantLength().call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+      bidsPerParticipantLength = res;
+    });
+    var j=0;
+    while(j<bidsPerParticipantLength) {
+      var cell3;
+      await myContract.methods.bidsPerParticipant(j).call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+        console.log(res);
+        var cell2 = row.insertCell(1);
+        cell3 = row.insertCell(2);
+        cell2.innerHTML = res;
+        cell3.innerHTML = ""
+      });
+      if(ended) {
+        await myContract.methods.valuesPerParticipant(j).call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+          console.log(res);
+          cell3.innerHTML = res;
+        });
+      }
+      j++;rowSize++;
+      row = table.insertRow(rowSize);
+      cell1 = row.insertCell(0);
+      cell1.innerHTML = "";      
     }
-    catch(e) {alert("Something went wrong!");console.log(e);}
+    i++;
   }
-
 }
 
 async function unlockAccount(account, password) {
