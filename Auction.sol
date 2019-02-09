@@ -19,6 +19,11 @@ contract Auction {
     mapping(address => uint[]) public values;
     mapping(address => uint[]) public randoms;
     address[] public bidders;
+    uint public bidderLength = 0;
+    bytes32[] public bidsPerParticipant;
+    uint[] public valuesPerParticipant;
+    uint[] public randomsPerParticipant;
+    uint public bidsPerParticipantLength;
 
     bool public ended = false;
     bool public reachedPlaceBid = false;
@@ -55,6 +60,22 @@ contract Auction {
         revealStarted = true;
     }
 
+    //onlyByAuctioneer
+    function getNumberOfBidders() public {
+        bidderLength = bidders.length;
+    }
+    
+    //onlyByAuctioneer
+    function storeBidsPerParticipant(address _bidder) public {
+        delete bidsPerParticipant;
+        delete valuesPerParticipant;
+        delete randomsPerParticipant;
+        bidsPerParticipant = bids[_bidder];
+        valuesPerParticipant = values[_bidder];
+        randomsPerParticipant = randoms[_bidder];
+        bidsPerParticipantLength = bidsPerParticipant.length;
+    }
+
     //TESTED
     function bidCommitment(bytes32 _bid) public {
         require(bidStarted == true,"Auction already ended.");
@@ -86,13 +107,11 @@ contract Auction {
     function revealCommitment(uint[] memory _values, uint[] memory _randoms) public {
         require(revealStarted == true,"Auction already ended.");
         lengthOfBids = bids[msg.sender].length;
-        //require(_values.length == lengthOfBids, "values length is not matching");
+        require(_values.length == lengthOfBids, "values length is not matching");
         //require(_randoms.length == lengthOfBids, "randoms length is not matching");
         
-        //for(uint i = 0; i < lengthOfBids; i++) {
-        //  values[msg.sender][i] = _values[i];
-        //  randoms[msg.sender][i] = _randoms[i];
-        //}
+        values[msg.sender] = _values;
+        randoms[msg.sender] = _randoms;
         
         amount_true = 0;
         total_amount_false = 0;
@@ -155,6 +174,6 @@ contract Auction {
           bids[_bidder].length = 0;
        }
         delete bidders;
-        
+        bidderLength = 0;
     }
 }
