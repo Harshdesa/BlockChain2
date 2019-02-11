@@ -20,9 +20,6 @@ try {
 catch (e) {
 console.log(e);
 }
-//var web4 = new Web3(new Web3.providers.HttpProvider(
-//    'https://ropsten.infura.io/v3/712ea259789e40bfb36ab7398fcd4430'
-//));
 
 import {abi} from './Auctionabi';
 
@@ -42,55 +39,13 @@ import {bytecodeCongress} from './Congressbytecode';
 
 import {accountMap} from './accountMappings';
 
-
-
-var myContract = new web3.eth.Contract(abi, "0xa1e1bb0458fa960c3694c7dbd92e8ba64dc800fc");
+var myContract = new web3.eth.Contract(abi, "0xa01001b15751458e7351bdcac29a14ae0b433dfe");
 
 var myPublicContract = new web4.eth.Contract(abiPublic, "0x8c257b187d218f2c33e42ee99cf52e9672415741");
 
 var myCongressFactoryContract = new web4.eth.Contract(abiCongressFactory, "0xa1AD255f723CdACdB60EEadeC227f088485cAf3d");
 
 var congressAddress;
-
-console.log("Public contract highest/secondHighest bid details");
-//myPublicContract.methods.highestBid().call().then(console.log);
-//myPublicContract.methods.highestBidder().call().then(console.log);
-//myPublicContract.methods.secondHighestBid().call().then(console.log);
-//myPublicContract.methods.secondHighestBidder().call().then(console.log);
-myPublicContract.methods.auctioneer().call({from: '0x4a5AD455963CE8935bc5a168EB2DD71c22058363'}, (error, result) => {
-  if(result == null) {
-    console.log(result + " Result is null");
-  }
-  else {
-    console.log(result);
-    console.log(error);
-  }
-});
-myPublicContract.methods.congressFactoryAddress().call({from: '0x4a5AD455963CE8935bc5a168EB2DD71c22058363'}, (error, result) => {
-  if(result == null) {
-    console.log(result + " Result is null");
-  }
-  else {
-    console.log(result);
-    console.log(error);
-  }
-});
-console.log("Details end here");
-
-myContract.methods.highestBid().call().then(console.log);
-myContract.methods.highestBidder().call().then(console.log);
-myContract.methods.bidEnd().call().then(console.log);
-myContract.methods.showValues(2).call({from: '0x21f84d5aa39bd6c73356f96cae6559b133cfaafe'}, (error, result) => {
-      console.log(result);
-});
-myContract.methods.bidders(2).call({from: '0x21f84d5aa39bd6c73356f96cae6559b133cfaafe'}, (error, result) => {
-  if(result == null) {
-    console.log(result + " Result is null");
-  }
-});
-
-myPublicContract.methods.getHighestBid().call().then(console.log);
-
 
 //JAVASCRIPT VARIABLES
 var signup;
@@ -207,14 +162,43 @@ async function login(){
      highestBidderB.textContent += res;
     });
 
-    var adjudication=false;
+    var auctionHasNotStartedYet = true;
+   
+    await myContract.methods.ended().call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+      if(res) {
+        auctionStatus.textContent += " The auction has ended. Winners are declared. If you suspect a breach, please see your dashboard."
+        auctionHasNotStartedYet = false;
+      }
+    });
     
-    //await myContract.methods.ended().call({from: loginAccount.value }, (error, result) => {
-    //  adjudication = result;
-    //  console.log(result);
-    //});
+    await myContract.methods.bidStarted().call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+      if(res) {
+        auctionStatus.textContent += " The bidding phase has started. Please place your bids using your dashboard." 
+        auctionHasNotStartedYet = false;
+      }
+    });
 
-  if(adjudication) {
+    await myContract.methods.revealStarted().call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+      if(res) {
+        auctionStatus.textContent += " The reveal phase has started. Please send in the array of values and random numbers you used to place bids."
+        auctionHasNotStartedYet = false;
+      }
+    });
+    
+    if(auctionHasNotStartedYet) {
+      auctionStatus.textContent += "The auction has not started yet. Auctioneer, please start the auction";
+    }
+    
+   
+    var adjudication=0;
+    
+   await myPublicContract.methods.breachContract().call({from: accountMap[loginAccount.value]}, (error, result) => {
+      console.log(result.indexOf('0x00'));
+      adjudication = result.indexOf('0x00');
+    });
+
+  console.log(adjudication);
+  if(adjudication < 0) {
 //ADJUDICATION DASHBOARD
   //For loop required here
   accused =  document.getElementById("accused");
@@ -230,45 +214,38 @@ async function login(){
   //STEP 5
   await myPublicContract.methods.auctioneerBreachDecision(["0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085"]).send({from: accountMap[loginAccount.value]}, function(error, transactionHash){
        console.log(transactionHash);
-       console.log(error);
     });
 
   auctioneerCheck = document.getElementById("auctioneerCheck");
   await myCongressFactoryContract.methods.breachSuspected().call({from: accountMap[loginAccount.value]}, (error, res) => {
-      auctioneerCheck.textContent += res
+      auctioneerCheck.textContent += " It is " + res + " that the auctioneer is cheating. "
     });
 
   voteResult = document.getElementById("voteResult");
   adjudicationEvents = document.getElementById("adjudicationEvents");
   await myPublicContract.methods.breachContract().call({from: accountMap[loginAccount.value]}, (error, res) => {
-      adjudicationEvents.textContent += res
+      adjudicationEvents.textContent += "The current congress contract address is: " + res
       congressAddress = res;
     });
 
-  //SHOULD NOT BE HERE, ONLY FOR TESTING PURPOSES TEMPORARILY
-  //await myPublicContract.methods.createProposal(congressAddress, '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085', 5).send({from: '0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085'}, function(error, transactionHash){
-  //      console.log(transactionHash);
-  //      console.log(error);
-  //    });
 
   //STEP 8
   await myPublicContract.methods.breachDecision(congressAddress, 0).send({from: accountMap[loginAccount.value], gas: 1400000}, function(error, transactionHash){
        console.log(transactionHash);
-       console.log(error);
     });
 
   await myPublicContract.methods.breachCommitted().call({from: accountMap[loginAccount.value]}, (error, res) => {
-      voteResult.textContent += res
+      voteResult.textContent += "Voting is live. So far, it is " + res + " that a breach has been committed";
     });
   }
 
     var allAccounts = await web3.eth.getAccounts(console.log);
     var i=0;
-    while(allAccounts.length>i)
-    {
-      listAccounts.textContent = listAccounts.textContent + '\n' + allAccounts[i] + '\n';
-      i++;
-    }
+    //while(allAccounts.length>i)
+   // {
+   //   listAccounts.textContent = listAccounts.textContent + '\n' + allAccounts[i] + '\n';
+   //   i++;
+   // }
 
     accountButtonsContainer.classList.add("hidden");
     dashboards.classList.remove("hidden");
@@ -288,7 +265,7 @@ async function login(){
 
 async function populateAuctioneerData() {
 
-  console.log("Populating auctioneer data");
+  console.log("Populating auctioneer data. Please wait");
   var ended = false;
   await myContract.methods.ended().call({from: loginAccount.value, gas: 2000001}, (error, res) => {
     ended = res;
@@ -324,7 +301,6 @@ async function populateAuctioneerData() {
     while(j<bidsPerParticipantLength) {
       var cell3;
       await myContract.methods.bidsPerParticipant(j).call({from: loginAccount.value, gas: 2000001}, (error, res) => {
-        console.log(res);
         var cell2 = row.insertCell(1);
         cell3 = row.insertCell(2);
         cell2.innerHTML = res;
@@ -332,7 +308,6 @@ async function populateAuctioneerData() {
       });
       if(ended) {
         await myContract.methods.valuesPerParticipant(j).call({from: loginAccount.value, gas: 2000001}, (error, res) => {
-          console.log(res);
           cell3.innerHTML = res;
         });
       }
@@ -343,6 +318,7 @@ async function populateAuctioneerData() {
     }
     i++;
   }
+  console.log("Auctioneer data populated");
 }
 
 async function unlockAccount(account, password) {
@@ -351,8 +327,6 @@ async function unlockAccount(account, password) {
 
 async function bid() {
   try {
-    console.log(bidAmount.value);
-    console.log(loginAccount.value);
     console.log("Bidder " + loginAccount.value + " is bidding");
     await myContract.methods.bidCommitment(bidAmount.value).send({from:loginAccount.value,  gas: 200001})
     .then((receipt) => {
@@ -372,7 +346,7 @@ async function bid() {
   } catch (e) {
   console.log(e);
   }
-  
+  console.log("The bid has been placed!"); 
 }
 
 async function reveal() {
@@ -388,7 +362,7 @@ async function reveal() {
       alert("Something went Wrong! Check logs");
       console.log(e);
   }
-
+  console.log("The values and randoms have been sent");
 }
 
 async function auctioneerStartBid() {
@@ -398,6 +372,7 @@ async function auctioneerStartBid() {
   .then((receipt) => {
       console.log(receipt); 
   });
+  console.log("Bid phase started!");
 }
 
 async function auctioneerStartReveal() {
@@ -407,6 +382,7 @@ async function auctioneerStartReveal() {
   .then((receipt) => {
       console.log(receipt); 
   });
+  console.log("Reveal phase started!");
 }
 
 
@@ -417,6 +393,7 @@ async function auctionEnd() {
   .then((receipt) => {
       console.log(receipt);
   });
+  console.log("Auction ended!");
 }
 
 //TESTED (INCLUDES SETTING COMMITMENTS FROM AUCTIONEER)
@@ -425,7 +402,7 @@ async function breachSuspected() {
   console.log(accuseList.value);
 
   //STEP 2
-  await myPublicContract.methods.breachSuspected(["0x4a5AD455963CE8935bc5a168EB2DD71c22058363"]).send({from: accountMap[loginAccount.value]}, function(error, transactionHash){
+  await myPublicContract.methods.breachSuspected(["0x4ACaa5a220c1Da0a59990a034b5C6faC611ce085"]).send({from: accountMap[loginAccount.value]}, function(error, transactionHash){
         console.log(transactionHash);
         console.log(error);
       });
@@ -440,9 +417,11 @@ async function breachSuspected() {
       });
   auctionStatus.textContent += " Auctioneer please enter your commitments for " + accuseList.value + ", a breach has been suspected!! (Wait for 5 seconds for automation)"
   await sleep(5000); 
-  
+ 
+
+  // MAKE THIS UN HARDCODED 
   //STEP 4
-  await myCongressFactoryContract.methods.setCommitmentsFromAuctioneer(["0x6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4c"]).send({from: '0x736B1Cd349D45F7f4daA785aA879eE77d7F97572'}, function(error, result) {
+  await myCongressFactoryContract.methods.setCommitmentsFromAuctioneer(["0xb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf6","0x8a35acfbc15ff81a39ae7d344fd709f28e8600b4aa8c65c6b64bfe7fe36bd19b"]).send({from: '0x736B1Cd349D45F7f4daA785aA879eE77d7F97572'}, function(error, result) {
     console.log("STEP 4");
     console.log(result);
     console.log(error);
@@ -492,7 +471,7 @@ async function onLoad() {
   privateAccount = document.getElementById("privateAccount");
   publicAccount = document.getElementById("publicAccount");
   publicBalance = document.getElementById("publicBalance");
-  listAccounts = document.getElementById("listAccounts");
+  //listAccounts = document.getElementById("listAccounts");
  
   auctionData = document.getElementById("auctionData");
   
