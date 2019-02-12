@@ -39,7 +39,7 @@ import {bytecodeCongress} from './Congressbytecode';
 
 import {accountMap} from './accountMappings';
 
-var myContract = new web3.eth.Contract(abi, "0xa01001b15751458e7351bdcac29a14ae0b433dfe");
+var myContract = new web3.eth.Contract(abi, "0x4e1c55b3b2369a01fffa500c30e577eabc87a34e");
 
 var myPublicContract = new web4.eth.Contract(abiPublic, "0x8c257b187d218f2c33e42ee99cf52e9672415741");
 
@@ -358,8 +358,19 @@ async function reveal() {
     .then((receipt) => {
      console.log(receipt);
     });
+    
+    await myContract.methods.total_amount_false().call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+      if(res>0) {
+        auctionStatus.textContent +=  " The values entered are false. You have been penalized by  " + res +" ether.";
+      }
+    });
+      await myContract.methods.amount_true().call({from: loginAccount.value, gas: 2000001}, (error, res) => {
+      if(res==0) {
+        auctionStatus.textContent +=  " You have entered incorrect number of values. Please re-enter.";
+      }
+    });
   } catch (e) {
-      alert("Something went Wrong! Check logs");
+      auctionStatus.textContent +=  "You have entered incorrect number of values. Please re-enter."
       console.log(e);
   }
   console.log("The values and randoms have been sent");
