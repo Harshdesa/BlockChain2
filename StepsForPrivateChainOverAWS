@@ -1,0 +1,163 @@
+#Need to spin up Ubuntu instances and then perform the following commands: 
+
+sudo apt-get install software-properties-common 
+
+sudo add-apt-repository -y ppa:ethereum/ethereum  
+
+sudo apt-get update  
+
+yes | sudo apt-get install ethereum 
+
+mkdir data-private 
+
+echo a > password.txt 
+
+geth --datadir=./data-private --password ./password.txt account new > account1.txt 
+
+geth --datadir=./data-private --password ./password.txt account new > account2.txt 
+
+cat account1.txt 
+
+cat account2.txt 
+
+echo $'{\n   \"config\": {\n   \"chainId\": 1994,\n   \"homesteadBlock\": 0\n   },\n  \"difficulty\": \"0x000\",\n  \"gasLimit\": \"0x2000000\",\n  \"alloc\": {\n     \"\": {\n      \"balance\": \"900000000000000000000000000\"\n     },\n     \"\": {\n      \"balance\": \"900000000000000000000000000\"\n     },\n     \"\": {\n      \"balance\": \"900000000000000000000000000\"\n     },\n     \"\": {\n      \"balance\": \"900000000000000000000000000\"\n     }\n  }\n}' > genesis.json 
+
+ 
+
+PART 1 ENDS 
+
+ 
+
+PART 2 BEGINS 
+
+# create the blockchain with the fund allocations 
+
+ 
+
+BOTH NODES: geth --datadir ./data-private init genesis.json 
+
+ 
+
+BOTH NODES: geth --networkid 17 --port 60303 --rpc --lightkdf --cache 16 --datadir ./data-private console 
+
+ 
+
+CHECK THE FOLLOWING:  
+
+personal.listAccounts 
+
+web3.eth.getBalance(web3.eth.accounts[0]) 
+
+web3.eth.getBalance(web3.eth.accounts[1]) 
+
+NODE 1: geth --identity nodeA--nodiscover --networkid 17 --port 60303 --maxpeers 10 --lightkdf --cache 16  --rpc --rpccorsdomain "*" --rpcport 8546 --rpcapi admin,db,eth,debug,net,txpool,personal,web3 --datadir ./data-private --minerthreads 1  --mine 
+
+ 
+
+ 
+
+NODE 2:  geth --identity nodeB --networkid 17 --port 60303 --rpc --rpcport 8545 --rpccorsdomain "*" --datadir ./data-private --minerthreads 1 --bootnodes enode://8dffbd6c4a619db55144d72221c746a404d1261c0494271e130402bcc41ffca99c17e4d63639c18efdc0d76d4cc1865f8684ea5d1d0ed0259bdb2873b273c71d@18.191.154.32:60303 
+
+
+NODE 3: geth --identity nodeC --networkid 17 --port 60303 --rpc --rpcport 8545 --rpccorsdomain "*" --datadir ./data-private --minerthreads 1 --bootnodes enode://8dffbd6c4a619db55144d72221c746a404d1261c0494271e130402bcc41ffca99c17e4d63639c18efdc0d76d4cc1865f8684ea5d1d0ed0259bdb2873b273c71d@18.191.154.32:60303 
+
+
+BOTH NODES: geth --ipcpath geth.ipc --datadir ./data-private attach 
+
+
+BOTH NODES: miner.start() 
+
+ 
+
+ 
+
+BOTH NODES: admin.nodeInfo.enode 
+
+ 
+
+BOTH NODES: admin.peers || net.peerCount 
+
+ 
+
+NODE1:  admin.addPeer("enode://951e8ace0d3421214a918bb1dfd81f297ff76325969007cd3f8fe8243c35274b38c782e7fc39a06bdf8603862e42bc36c47a9f57ff7e1a6cb3c127d94703c51f@34.201.39.163:60303") 
+
+
+
+Miscellaneous commands: 
+
+ 
+
+eth.sendTransaction({from:eth.coinbase, to: web3.eth.accounts[1], value:web3.toWei(0.01,"ether")}) 
+
+eth.blockNumber 
+
+eth.getTransactionReceipt("0xe5bff2d89910f692a1cdd93c5235345f4b3904ed8602f4ef60f62a0e6600b551") 
+
+eth.getTransaction("0x597b92afad85d2167fc226cba72616aba159cf77913dcd3631822b48a4ee1fc9") 
+
+personal.unlockAccount(web3.eth.accounts[0]) 
+
+web3.eth.getBalance(web3.eth.accounts[1]) 
+
+
+
+
+var abi = eth.contract()
+
+var bytecode = '0x...'
+
+
+
+var deploy = {from:web3.eth.accounts[0], data:bytecode, gas: 2000000} 
+
+personal.unlockAccount(web3.eth.accounts[0]) 
+
+personal.unlockAccount(web3.eth.accounts[1]) 
+
+ 
+
+var instance = abi.new(10, 10, deploy) 
+
+instance.address 
+var instance_main = abi.at(instance.address) 
+
+instance_main.highestBid() 
+instance_main.highestBidder() 
+
+ 
+
+instance_main.startBid({from: web3.eth.accounts[0], gas: 1000000}) 
+
+instance_main.startReveal({from: web3.eth.accounts[0], gas: 1000000}) 
+
+instance_main.reset({from: web3.eth.accounts[0], gas: 1000000}) 
+
+instance_main.auctionEnds({from: web3.eth.accounts[0], gas: 1000000}) 
+
+instance_main.bidCommitment('0x036b6384b5eca791c62761152d0c79bb0604c104a5fb6f4eb0703f3154bb3db0', {from: web3.eth.accounts[1], gas: 1000000}) 
+
+ 
+
+instance_main.revealCommitment([5],[5], {from: web3.eth.accounts[1], gas: 1000000}) 
+
+ 
+
+instance_main.bidStarted() 
+
+instance_main.revealStarted() 
+
+instance_main.ended() 
+
+instance_main.bidders(0) 
+
+instance_main.bidders(1) 
+
+ 
+
+instance_main.bids("0x1e0ef946b35a94b531764a8488ba8475bbc0535c",0) 
+
+ 
+
+ 
+
+instance_main.bids() 
